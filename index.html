@@ -99,188 +99,270 @@ npx cap open android
   
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script>
 <style id="smash-admin-lock-styles">
-  #smash-admin-ui {
-    position: sticky;
-    top: 0;
-    z-index: 10000;
-    width: 100%;
-    color: #fff;
-    background: rgba(10, 15, 28, 0.97);
-    border-bottom: 1px solid #2A3441;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
+#smash-admin-ui {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  width: 100%;
+  color: #fff;
+  background: rgba(10, 15, 28, 0.97);
+  border-bottom: 1px solid #2A3441;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
+.smash-admin-bar {
+  max-width: 1280px;
+  min-height: 50px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.smash-admin-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.smash-admin-status small {
+  display: block;
+  margin-top: 1px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.smash-admin-badge {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #FF8C00;
+  box-shadow: 0 0 12px rgba(255, 140, 0, 0.75);
+}
+
+body.smash-admin-unlocked .smash-admin-badge {
+  background: #00FF88;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.75);
+}
+
+.smash-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smash-cloud-status {
+  max-width: 220px;
+  padding: 5px 9px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.78);
+  background: #1A2332;
+  border: 1px solid #2A3441;
+  border-radius: 999px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.smash-cloud-status[data-state="ok"] {
+  color: #00FF88;
+  border-color: rgba(0, 255, 136, 0.35);
+}
+
+.smash-cloud-status[data-state="error"] {
+  color: #FF8888;
+  border-color: rgba(255, 68, 68, 0.4);
+}
+
+.smash-admin-button {
+  appearance: none;
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border: 1px solid #DFFF00;
+  border-radius: 999px;
+  color: #0A0F1C;
+  background: #DFFF00;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.smash-admin-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.smash-admin-button.secondary {
+  color: #fff;
+  background: #252F45;
+  border-color: #3B4659;
+}
+
+body.smash-public-mode .smash-admin-action {
+  display: none !important;
+}
+
+#smash-admin-modal[hidden] {
+  display: none !important;
+}
+
+#smash-admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(5px);
+}
+
+.smash-admin-dialog {
+  width: min(100%, 400px);
+  padding: 22px;
+  color: #fff;
+  background: #1A2332;
+  border: 1px solid #3B4659;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.48);
+}
+
+.smash-admin-dialog h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.smash-admin-dialog p {
+  margin: 0 0 16px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.smash-admin-field {
+  display: block;
+  margin-top: 11px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.smash-admin-input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 12px 13px;
+  color: #fff;
+  background: #0A0F1C;
+  border: 1px solid #3B4659;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.smash-admin-input:focus {
+  border-color: #DFFF00;
+  box-shadow: 0 0 0 3px rgba(223, 255, 0, 0.14);
+}
+
+#smash-admin-pin {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.45em;
+}
+
+#smash-admin-error {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: #FF8888;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.smash-admin-dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.smash-admin-dialog-actions .smash-admin-button {
+  flex: 1 1 0;
+}
+
+@media (max-width: 620px) {
   .smash-admin-bar {
-    max-width: 1280px;
-    min-height: 48px;
-    margin: 0 auto;
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    padding: 8px 10px;
   }
 
   .smash-admin-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 11px;
   }
 
-  .smash-admin-status small {
-    display: block;
-    margin-top: 1px;
-    color: rgba(255, 255, 255, 0.58);
-    font-size: 10px;
-    font-weight: 500;
-  }
-
-  .smash-admin-badge {
-    width: 10px;
-    height: 10px;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    background: #FF8C00;
-    box-shadow: 0 0 12px rgba(255, 140, 0, 0.75);
-  }
-
-  body.smash-admin-unlocked .smash-admin-badge {
-    background: #00FF88;
-    box-shadow: 0 0 12px rgba(0, 255, 136, 0.75);
+  .smash-admin-status small,
+  .smash-cloud-status {
+    display: none;
   }
 
   .smash-admin-button {
-    appearance: none;
-    flex: 0 0 auto;
-    padding: 8px 14px;
-    border: 1px solid #DFFF00;
-    border-radius: 999px;
-    color: #0A0F1C;
-    background: #DFFF00;
-    font: inherit;
-    font-size: 12px;
-    font-weight: 900;
-    cursor: pointer;
-  }
-
-  .smash-admin-button.secondary {
-    color: #fff;
-    background: #252F45;
-    border-color: #3B4659;
-  }
-
-  body.smash-public-mode .smash-admin-action {
-    display: none !important;
-  }
-
-  #smash-admin-modal[hidden] {
-    display: none !important;
-  }
-
-  #smash-admin-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 11000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.76);
-    backdrop-filter: blur(5px);
-  }
-
-  .smash-admin-dialog {
-    width: min(100%, 380px);
-    padding: 22px;
-    color: #fff;
-    background: #1A2332;
-    border: 1px solid #3B4659;
-    border-radius: 20px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.48);
-  }
-
-  .smash-admin-dialog h2 {
-    margin: 0 0 6px;
-    font-size: 18px;
-    font-weight: 900;
-  }
-
-  .smash-admin-dialog p {
-    margin: 0 0 16px;
-    color: rgba(255, 255, 255, 0.68);
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  #smash-admin-pin {
-    width: 100%;
-    padding: 13px 14px;
-    color: #fff;
-    background: #0A0F1C;
-    border: 1px solid #3B4659;
-    border-radius: 12px;
-    outline: none;
-    text-align: center;
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 0.35em;
-  }
-
-  #smash-admin-pin:focus {
-    border-color: #DFFF00;
-    box-shadow: 0 0 0 3px rgba(223, 255, 0, 0.14);
-  }
-
-  #smash-admin-error {
-    min-height: 18px;
-    margin: 8px 0 0;
-    color: #FF7777;
+    padding: 7px 10px;
     font-size: 11px;
-    font-weight: 700;
   }
-
-  .smash-admin-dialog-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .smash-admin-dialog-actions .smash-admin-button {
-    flex: 1 1 0;
-  }
-
-  @media (max-width: 520px) {
-    .smash-admin-bar {
-      padding: 8px 10px;
-    }
-
-    .smash-admin-status {
-      font-size: 11px;
-    }
-
-    .smash-admin-status small {
-      display: none;
-    }
-
-    .smash-admin-button {
-      padding: 7px 10px;
-      font-size: 11px;
-    }
-  }
+}
 </style>
 
 <script id="smash-admin-lock">
 (function () {
   "use strict";
 
-  var ADMIN_PIN = "1234";
-  var SESSION_KEY = "smash_admin_unlocked";
+  var SUPABASE_URL = "https://wgrdqfegomwtxwevjagb.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_wXxOn-zeTOUmHrjKVlaG-w_nDvqUqks";
+  var STATE_ID = "global";
+  var AUTH_KEY = "smash_cloud_editor_pin";
+  var STORAGE_KEYS = [
+    "smash_15seg_final_v2_main",
+    "smash_15seg_final_v2_fotos",
+    "smash_15seg_final_v2_jogadores"
+  ];
+
   var isAdmin = false;
-  var observer;
+  var adminVerified = false;
+  var sessionPin = "";
+  var applyingRemote = false;
+  var saveTimer = null;
+  var pollTimer = null;
+  var lastRemoteSignature = null;
+  var lastPushedSignature = null;
+  var lastRemoteUpdatedAt = null;
+  var observer = null;
+
+  var nativeSetItem = Storage.prototype.setItem;
+  var nativeRemoveItem = Storage.prototype.removeItem;
+
+  // A aplicação passa a depender da nuvem. Removemos versões antigas em cache
+  // para que todos os dispositivos recebam sempre a edição publicada mais recente.
+  function removeLegacyServiceWorkers() {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      registrations.forEach(function (registration) { registration.unregister(); });
+    }).catch(function () {});
+  }
+
+  removeLegacyServiceWorkers();
+  window.addEventListener("load", function () {
+    window.setTimeout(removeLegacyServiceWorkers, 1500);
+  });
 
   var mutationPatterns = [
     /^Reset Timers$/i,
@@ -307,6 +389,13 @@ npx cap open android
     /Testar Guardar/i
   ];
 
+  function setCloudStatus(message, state) {
+    var element = document.getElementById("smash-cloud-status");
+    if (!element) return;
+    element.textContent = message;
+    element.dataset.state = state || "waiting";
+  }
+
   function normalText(element) {
     return (element.textContent || "").replace(/\s+/g, " ").trim();
   }
@@ -316,15 +405,12 @@ npx cap open android
 
     var control = element.closest("button, input, select, textarea, label");
     if (!control || control.closest("#smash-admin-ui")) return false;
-
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(control.tagName)) return true;
 
     var text = normalText(control);
     if (mutationPatterns.some(function (pattern) { return pattern.test(text); })) return true;
-
     if (control.tagName === "LABEL" && control.querySelector("input, select, textarea")) return true;
     if (control.hasAttribute("aria-label") && !text) return true;
-
     return false;
   }
 
@@ -343,7 +429,6 @@ npx cap open android
 
     controls.forEach(function (control) {
       if (!isMutationControl(control)) return;
-
       var target = control;
       if (/^(INPUT|SELECT|TEXTAREA)$/.test(control.tagName) && control.closest("label")) {
         target = control.closest("label");
@@ -352,15 +437,12 @@ npx cap open android
       target.setAttribute("data-admin-only", "true");
     });
 
-    var headings = scope.querySelectorAll("h1, h2, h3, span");
-    headings.forEach(function (heading) {
+    scope.querySelectorAll("h1, h2, h3, span").forEach(function (heading) {
       var text = normalText(heading);
-
       if (text.indexOf("16 JOGADORES - EDITÁVEIS") === 0) {
         if (!heading.dataset.adminOriginalText) heading.dataset.adminOriginalText = text;
         heading.textContent = isAdmin ? heading.dataset.adminOriginalText : "16 JOGADORES";
       }
-
       if (text === "🔍 Debug Guardar" && heading.parentElement) {
         heading.parentElement.classList.add("smash-admin-action");
         heading.parentElement.setAttribute("data-admin-only", "true");
@@ -368,22 +450,204 @@ npx cap open android
     });
   }
 
+  function snapshotLocalState() {
+    var payload = {};
+    STORAGE_KEYS.forEach(function (key) {
+      payload[key] = localStorage.getItem(key);
+    });
+    return payload;
+  }
+
+  function stateSignature(payload) {
+    return JSON.stringify(payload || {});
+  }
+
+  function apiHeaders(extra) {
+    var headers = {
+      apikey: SUPABASE_KEY,
+      Authorization: "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    };
+    Object.keys(extra || {}).forEach(function (key) { headers[key] = extra[key]; });
+    return headers;
+  }
+
+  async function apiRequest(path, options) {
+    var requestOptions = options || {};
+    var response = await fetch(SUPABASE_URL + path, {
+      method: requestOptions.method || "GET",
+      headers: apiHeaders(requestOptions.headers),
+      body: requestOptions.body
+    });
+
+    var text = await response.text();
+    var data = null;
+    if (text) {
+      try { data = JSON.parse(text); }
+      catch (parseError) { data = text; }
+    }
+
+    if (!response.ok) {
+      var message = data && (data.message || data.msg || data.error_description || data.error);
+      throw new Error(message || "Não foi possível comunicar com a base de dados.");
+    }
+    return data;
+  }
+
+  function savePin(nextPin) {
+    sessionPin = nextPin || "";
+    if (!sessionPin) {
+      sessionStorage.removeItem(AUTH_KEY);
+      return;
+    }
+    sessionStorage.setItem(AUTH_KEY, sessionPin);
+  }
+
+  async function verifyPin(pin) {
+    var valid = await apiRequest("/rest/v1/rpc/check_smash_pin", {
+      method: "POST",
+      body: JSON.stringify({ p_pin: pin })
+    });
+    adminVerified = valid === true;
+    return adminVerified;
+  }
+
+  async function fetchRemoteState() {
+    var rows = await apiRequest(
+      "/rest/v1/smash_app_state?id=eq." + STATE_ID + "&select=payload,updated_at,updated_by",
+      { method: "GET" }
+    );
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  }
+
+  function applyRemoteState(row) {
+    if (!row || !row.payload) return false;
+    var remoteSignature = stateSignature(row.payload);
+    var localSignature = stateSignature(snapshotLocalState());
+
+    lastRemoteSignature = remoteSignature;
+    lastRemoteUpdatedAt = row.updated_at || null;
+    if (remoteSignature === localSignature) return false;
+
+    applyingRemote = true;
+    try {
+      STORAGE_KEYS.forEach(function (key) {
+        var value = Object.prototype.hasOwnProperty.call(row.payload, key) ? row.payload[key] : null;
+        if (value === null || typeof value === "undefined") nativeRemoveItem.call(localStorage, key);
+        else nativeSetItem.call(localStorage, key, value);
+      });
+    } finally {
+      applyingRemote = false;
+    }
+
+    sessionStorage.setItem("smash_cloud_last_applied", row.updated_at || remoteSignature.slice(0, 80));
+    window.location.reload();
+    return true;
+  }
+
+  async function pullRemoteState() {
+    try {
+      var row = await fetchRemoteState();
+      if (!row) {
+        setCloudStatus("☁️ A aguardar primeira gravação", "waiting");
+        return null;
+      }
+      applyRemoteState(row);
+      setCloudStatus("☁️ Sincronizado", "ok");
+      return row;
+    } catch (error) {
+      setCloudStatus("⚠️ Sem ligação à nuvem", "error");
+      return null;
+    }
+  }
+
+  async function pushLocalState(force) {
+    if (!adminVerified || !sessionPin) return false;
+
+    var payload = snapshotLocalState();
+    var signature = stateSignature(payload);
+    if (!force && (signature === lastPushedSignature || signature === lastRemoteSignature)) return true;
+
+    setCloudStatus("☁️ A guardar...", "waiting");
+    var rows = await apiRequest("/rest/v1/rpc/save_smash_state", {
+      method: "POST",
+      body: JSON.stringify({
+        p_pin: sessionPin,
+        p_payload: payload
+      })
+    });
+
+    lastPushedSignature = signature;
+    lastRemoteSignature = signature;
+    if (Array.isArray(rows) && rows[0]) lastRemoteUpdatedAt = rows[0].saved_at || lastRemoteUpdatedAt;
+    setCloudStatus("☁️ Guardado e partilhado", "ok");
+    return true;
+  }
+
+  function schedulePush() {
+    if (!adminVerified || applyingRemote) return;
+    window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(function () {
+      pushLocalState(false).catch(function () {
+        setCloudStatus("⚠️ Falha ao guardar", "error");
+      });
+    }, 700);
+  }
+
+  Storage.prototype.setItem = function (key, value) {
+    nativeSetItem.apply(this, arguments);
+    if (this === localStorage && STORAGE_KEYS.indexOf(String(key)) !== -1 && !applyingRemote) schedulePush();
+  };
+
+  Storage.prototype.removeItem = function (key) {
+    nativeRemoveItem.apply(this, arguments);
+    if (this === localStorage && STORAGE_KEYS.indexOf(String(key)) !== -1 && !applyingRemote) schedulePush();
+  };
+
+  async function signIn(pin) {
+    if (!(await verifyPin(pin))) throw new Error("PIN_INVALID");
+    savePin(pin);
+    var remote = await fetchRemoteState();
+    if (remote) applyRemoteState(remote);
+    else await pushLocalState(true);
+    return true;
+  }
+
+  async function restoreSession() {
+    try {
+      var savedPin = sessionStorage.getItem(AUTH_KEY) || "";
+      if (!savedPin) return false;
+      savePin(savedPin);
+      var valid = await verifyPin(savedPin);
+      if (!valid) savePin("");
+      return valid;
+    } catch (error) {
+      savePin("");
+      adminVerified = false;
+      return false;
+    }
+  }
+
+  async function signOut() {
+    adminVerified = false;
+    savePin("");
+  }
+
   function setMode(unlocked) {
-    isAdmin = Boolean(unlocked);
+    isAdmin = Boolean(unlocked && adminVerified);
     document.body.classList.toggle("smash-admin-unlocked", isAdmin);
     document.body.classList.toggle("smash-public-mode", !isAdmin);
 
-    var statusTitle = document.getElementById("smash-admin-status-title");
-    var statusHelp = document.getElementById("smash-admin-status-help");
+    var title = document.getElementById("smash-admin-status-title");
+    var help = document.getElementById("smash-admin-status-help");
     var action = document.getElementById("smash-admin-toggle");
 
-    if (statusTitle) statusTitle.textContent = isAdmin ? "Modo administrador" : "Modo público — consulta apenas";
-    if (statusHelp) statusHelp.textContent = isAdmin ? "A edição está ativa nesta sessão" : "Resultados, ranking e treinos disponíveis para consulta";
+    if (title) title.textContent = isAdmin ? "Modo de edição" : "Modo público — dados partilhados";
+    if (help) help.textContent = isAdmin ? "Edição ativa e sincronizada" : "Atualização automática em todos os dispositivos";
     if (action) {
-      action.textContent = isAdmin ? "🔒 Bloquear edição" : "🔑 Entrar como admin";
+      action.textContent = isAdmin ? "🔒 Bloquear edição" : "🔑 Editar resultados";
       action.classList.toggle("secondary", isAdmin);
     }
-
     tagAdminControls(document);
   }
 
@@ -392,7 +656,6 @@ npx cap open android
     var pin = document.getElementById("smash-admin-pin");
     var error = document.getElementById("smash-admin-error");
     if (!modal || !pin) return;
-
     if (error) error.textContent = "";
     pin.value = "";
     modal.hidden = false;
@@ -407,25 +670,38 @@ npx cap open android
     modal.setAttribute("aria-hidden", "true");
   }
 
-  function unlock() {
-    var pin = document.getElementById("smash-admin-pin");
-    var error = document.getElementById("smash-admin-error");
-    if (!pin) return;
-
-    if (pin.value === ADMIN_PIN) {
-      try { sessionStorage.setItem(SESSION_KEY, "1"); } catch (storageError) {}
-      setMode(true);
-      closeLogin();
-      return;
-    }
-
-    if (error) error.textContent = "PIN incorreto. Tente novamente.";
-    pin.value = "";
-    pin.focus();
+  function friendlyAuthError(error) {
+    var message = error && error.message ? error.message : "Não foi possível ativar a edição.";
+    if (/PIN_INVALID|pin inválido|invalid pin/i.test(message)) return "PIN incorreto.";
+    return "Não foi possível validar o PIN. Confirme a ligação à internet.";
   }
 
-  function lock() {
-    try { sessionStorage.removeItem(SESSION_KEY); } catch (storageError) {}
+  async function unlock() {
+    var pin = document.getElementById("smash-admin-pin");
+    var error = document.getElementById("smash-admin-error");
+    var submit = document.getElementById("smash-admin-submit");
+    if (!pin || !submit) return;
+
+    error.textContent = "";
+    submit.disabled = true;
+    submit.textContent = "A validar...";
+    try {
+      await signIn(pin.value.trim());
+      pin.value = "";
+      setMode(true);
+      closeLogin();
+    } catch (authError) {
+      error.textContent = friendlyAuthError(authError);
+      pin.value = "";
+      pin.focus();
+    } finally {
+      submit.disabled = false;
+      submit.textContent = "Entrar";
+    }
+  }
+
+  async function lock() {
+    await signOut();
     setMode(false);
     window.location.reload();
   }
@@ -440,34 +716,36 @@ npx cap open android
           '<span><span id="smash-admin-status-title"></span>' +
           '<small id="smash-admin-status-help"></small></span>' +
         '</div>' +
-        '<button id="smash-admin-toggle" class="smash-admin-button" type="button"></button>' +
+        '<div class="smash-admin-actions">' +
+          '<span id="smash-cloud-status" class="smash-cloud-status" data-state="waiting">☁️ A ligar...</span>' +
+          '<button id="smash-admin-toggle" class="smash-admin-button" type="button"></button>' +
+        '</div>' +
       '</div>' +
       '<div id="smash-admin-modal" role="dialog" aria-modal="true" aria-labelledby="smash-admin-dialog-title" aria-hidden="true" hidden>' +
         '<form id="smash-admin-form" class="smash-admin-dialog">' +
-          '<h2 id="smash-admin-dialog-title">🔐 Acesso de administrador</h2>' +
-          '<p>Introduza o PIN para ativar os comandos de edição nesta sessão.</p>' +
-          '<input id="smash-admin-pin" name="admin-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN de administrador">' +
+          '<h2 id="smash-admin-dialog-title">🔐 Desbloquear edição</h2>' +
+          '<p>Introduza o PIN partilhado para editar resultados, jogadores e fotografias.</p>' +
+          '<label class="smash-admin-field">PIN de edição' +
+            '<input id="smash-admin-pin" class="smash-admin-input" name="admin-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" required>' +
+          '</label>' +
           '<div id="smash-admin-error" role="alert"></div>' +
           '<div class="smash-admin-dialog-actions">' +
             '<button id="smash-admin-cancel" class="smash-admin-button secondary" type="button">Cancelar</button>' +
-            '<button class="smash-admin-button" type="submit">Desbloquear</button>' +
+            '<button id="smash-admin-submit" class="smash-admin-button" type="submit">Entrar</button>' +
           '</div>' +
         '</form>' +
       '</div>';
 
     document.body.insertBefore(ui, document.body.firstChild);
-
     document.getElementById("smash-admin-toggle").addEventListener("click", function () {
       if (isAdmin) lock();
       else openLogin();
     });
-
     document.getElementById("smash-admin-cancel").addEventListener("click", closeLogin);
     document.getElementById("smash-admin-form").addEventListener("submit", function (event) {
       event.preventDefault();
       unlock();
     });
-
     document.getElementById("smash-admin-modal").addEventListener("click", function (event) {
       if (event.target === event.currentTarget) closeLogin();
     });
@@ -479,16 +757,14 @@ npx cap open android
     event.stopImmediatePropagation();
   }
 
-  function init() {
+  async function init() {
     buildAdminUi();
-
-    try { isAdmin = sessionStorage.getItem(SESSION_KEY) === "1"; } catch (storageError) { isAdmin = false; }
-    setMode(isAdmin);
+    document.body.classList.add("smash-public-mode");
+    tagAdminControls(document);
 
     ["click", "change", "input", "beforeinput", "submit", "drop"].forEach(function (eventName) {
       document.addEventListener(eventName, blockPublicMutation, true);
     });
-
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape") closeLogin();
     });
@@ -501,6 +777,15 @@ npx cap open android
       });
     });
     observer.observe(document.getElementById("root") || document.body, { childList: true, subtree: true });
+
+    var restored = await restoreSession();
+    setMode(restored);
+    await pullRemoteState();
+    pollTimer = window.setInterval(pullRemoteState, 4000);
+    window.addEventListener("focus", pullRemoteState);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") pullRemoteState();
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
