@@ -381,6 +381,9 @@ body.smash-public-mode .smash-admin-action {
   var suppressLocalSaves = false;
   var saveTimer = null;
   var pollTimer = null;
+  var localDirty = false;
+  var pushInFlight = false;
+  var lastLocalChangeAt = 0;
   var lastRemoteSignature = null;
   var lastPushedSignature = null;
   var lastRemoteUpdatedAt = null;
@@ -612,6 +615,12 @@ body.smash-public-mode .smash-admin-action {
 
   async function pullRemoteState() {
     try {
+      // Nunca substituímos uma edição local enquanto ela ainda está pendente
+      // ou a ser enviada para a nuvem.
+      if (isAdmin && (localDirty || pushInFlight || saveTimer !== null)) {
+        setCloudStatus("☁️ A guardar...", "waiting");
+        return null;
+      }
       var row = await fetchRemoteState();
       if (!row) {
         setCloudStatus("☁️ A aguardar primeira gravação", "waiting");
@@ -631,30 +640,44 @@ body.smash-public-mode .smash-admin-action {
 
     var payload = snapshotLocalState();
     var signature = stateSignature(payload);
-    if (!force && (signature === lastPushedSignature || signature === lastRemoteSignature)) return true;
+    if (!force && (signature === lastPushedSignature || signature === lastRemoteSignature)) {
+      localDirty = false;
+      return true;
+    }
 
     setCloudStatus("☁️ A guardar...", "waiting");
-    var rows = await apiRequest("/rest/v1/rpc/save_smash_state", {
-      method: "POST",
-      body: JSON.stringify({
-        p_pin: sessionPin,
-        p_payload: payload
-      })
-    });
+    var changeStamp = lastLocalChangeAt;
+    pushInFlight = true;
+    try {
+      var rows = await apiRequest("/rest/v1/rpc/save_smash_state", {
+        method: "POST",
+        body: JSON.stringify({
+          p_pin: sessionPin,
+          p_payload: payload
+        })
+      });
 
-    lastPushedSignature = signature;
-    lastRemoteSignature = signature;
-    if (Array.isArray(rows) && rows[0]) lastRemoteUpdatedAt = rows[0].saved_at || lastRemoteUpdatedAt;
-    setCloudStatus("☁️ Guardado e partilhado", "ok");
-    return true;
+      lastPushedSignature = signature;
+      lastRemoteSignature = signature;
+      if (Array.isArray(rows) && rows[0]) lastRemoteUpdatedAt = rows[0].saved_at || lastRemoteUpdatedAt;
+      if (lastLocalChangeAt === changeStamp) localDirty = false;
+      setCloudStatus("☁️ Guardado e partilhado", "ok");
+      return true;
+    } finally {
+      pushInFlight = false;
+    }
   }
 
   function schedulePush() {
     if (!adminVerified || applyingRemote) return;
+    localDirty = true;
+    lastLocalChangeAt = Date.now();
     window.clearTimeout(saveTimer);
     saveTimer = window.setTimeout(function () {
+      saveTimer = null;
       pushLocalState(false).catch(function () {
         setCloudStatus("⚠️ Falha ao guardar", "error");
+        if (localDirty) window.setTimeout(schedulePush, 1500);
       });
     }, 700);
   }
