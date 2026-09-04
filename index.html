@@ -602,9 +602,11 @@ body.smash-public-mode .smash-admin-action {
       return true;
     }
 
-    // Compatibilidade: se a função não estiver disponível, mantém o reload
-    // protegido como último recurso.
-    window.location.reload();
+    // Se o bridge React não estiver disponível, mantemos os valores no
+    // armazenamento para a próxima inicialização, mas nunca forçamos um
+    // reload que possa provocar um ecrã a piscar.
+    suppressLocalSaves = false;
+    try { sessionStorage.removeItem("smash_cloud_last_applied"); } catch (error) {}
     return true;
   }
 
@@ -768,7 +770,6 @@ body.smash-public-mode .smash-admin-action {
   async function lock() {
     await signOut();
     setMode(false);
-    window.location.reload();
   }
 
   function buildAdminUi() {
