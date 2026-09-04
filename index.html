@@ -37,6 +37,26 @@
     // sincronização e provocar um ciclo de "piscar". Os visitantes não editam,
     // por isso estes handlers ficam bloqueados apenas nesse modo.
     (function () {
+      // A proteção também é feita no armazenamento: a aplicação original
+      // guarda em pagehide/beforeunload e podia substituir o estado remoto.
+      // O marcador é criado pelo sincronizador apenas durante esse reload.
+      try {
+        var storageSetItem = Storage.prototype.setItem;
+        var storageRemoveItem = Storage.prototype.removeItem;
+        sessionStorage.removeItem("smash_cloud_last_applied");
+        function suppressRemoteReloadSave(storage) {
+          return storage === localStorage && sessionStorage.getItem("smash_cloud_last_applied");
+        }
+        Storage.prototype.setItem = function (key, value) {
+          if (suppressRemoteReloadSave(this)) return;
+          return storageSetItem.apply(this, arguments);
+        };
+        Storage.prototype.removeItem = function (key) {
+          if (suppressRemoteReloadSave(this)) return;
+          return storageRemoveItem.apply(this, arguments);
+        };
+      } catch (_) {}
+
       function blockPublicUnloadSave(event) {
         if (document.body && document.body.classList.contains("smash-public-mode")) {
           event.stopImmediatePropagation();
