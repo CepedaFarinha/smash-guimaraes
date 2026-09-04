@@ -637,6 +637,7 @@ body.smash-public-mode .smash-admin-action {
 
   async function pushLocalState(force) {
     if (!adminVerified || !sessionPin) return false;
+    if (pushInFlight) return false;
 
     var payload = snapshotLocalState();
     var signature = stateSignature(payload);
